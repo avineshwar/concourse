@@ -10,7 +10,7 @@ port module Message.Effects exposing
 import Base64
 import Browser.Dom exposing (Element, getElement, getViewport, getViewportOf, setViewportOf)
 import Browser.Navigation as Navigation
-import Concourse
+import Concourse exposing (encodeJob, encodePipeline)
 import Concourse.BuildStatus exposing (BuildStatus)
 import Concourse.Pagination exposing (Page)
 import Json.Encode
@@ -25,8 +25,10 @@ import Message.Message
 import Message.ScrollDirection exposing (ScrollDirection(..))
 import Message.Storage
     exposing
-        ( loadFromLocalStorage
+        ( jobsKey
+        , loadFromLocalStorage
         , loadFromSessionStorage
+        , pipelinesKey
         , saveToLocalStorage
         , saveToSessionStorage
         , sideBarStateKey
@@ -169,6 +171,10 @@ type Effect
     | LoadToken
     | SaveSideBarState Bool
     | LoadSideBarState
+    | SaveCachedJobs (List Concourse.Job)
+    | LoadCachedJobs
+    | SaveCachedPipelines (List Concourse.Pipeline)
+    | LoadCachedPipelines
     | GetViewportOf DomID TooltipPolicy
     | GetElement DomID
 
@@ -428,6 +434,18 @@ runEffect effect key csrfToken =
 
         LoadSideBarState ->
             loadFromSessionStorage sideBarStateKey
+
+        SaveCachedJobs jobs ->
+            saveToLocalStorage ( jobsKey, jobs |> Json.Encode.list encodeJob )
+
+        LoadCachedJobs ->
+            loadFromLocalStorage jobsKey
+
+        SaveCachedPipelines pipelines ->
+            saveToLocalStorage ( pipelinesKey, pipelines |> Json.Encode.list encodePipeline )
+
+        LoadCachedPipelines ->
+            loadFromLocalStorage pipelinesKey
 
         GetViewportOf domID tooltipPolicy ->
             Browser.Dom.getViewportOf (toHtmlID domID)
