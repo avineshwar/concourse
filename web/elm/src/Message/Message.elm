@@ -56,7 +56,6 @@ type DomID
     | PinIcon
     | PinMenuDropDown String
     | PinButton VersionId
-    | UnpinButton
     | PinBar
     | PipelineButton Concourse.PipelineIdentifier
     | VisibilityButton Concourse.PipelineIdentifier
